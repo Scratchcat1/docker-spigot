@@ -187,15 +187,16 @@ start() {
 
 stop() {
   local i
+  timeout=120
 
   echo -n "Stopping minecraft server..."
 
   sendCMD "stop"
 
-  # wait for 10 seconds until killing it
+  # wait for timeout seconds until killing it
   i=0
 
-  while [ $i -lt 10  -a $(isRunning) -eq 1 ]
+  while [ $i -lt $timeout  -a $(isRunning) -eq 1 ]
   do
     echo -n "."
     sleep 1
@@ -203,14 +204,14 @@ stop() {
   done
 
   if [ $(isRunning) -eq 1 ] ; then
-     echo -n  "(need to kill it)..."
+     echo -n  "(need to kill it, waited for $timeout seconds)..."
      kill  $(getPID)
      # give it time to die
      sleep 2
   fi
 
   if [ $(isRunning) -eq 1 ] ; then
-     echo "Could not stop it"
+     echo "Could not stop it even using kill"
      exit 1
   else
      echo "Stopped" 

@@ -1,11 +1,8 @@
 ## Minecraft server SPIGOT on Ubuntu 20.04 with OpenJDK 11/16/17
-
-![](https://img.shields.io/docker/pulls/nimmis/spigot?style=flat-square)
+*Fork of [nimmis' image](https://github.com/nimmis/docker-spigot)*
 
 
 **NOW works with Minecraft 1.18**
-
-This is a major change in logic to build the correct version of spigot so some combination of conditions may not compile correctly. Please make an issue so I can correct it. There will be another build shortly with another feature
 
 Java bug on version 1.17 with 1 core add **-e OTHER_JAVA_OPTS=-Djava.util.concurrent.ForkJoinPool.common.parallelism=1** as workaround
 
@@ -16,14 +13,10 @@ released minecraft.jar
 
 Each time the container is started the presence of the file /minecraft/spigot.jar, if the file is missing a build of spigot.jar is started.
 
-The spigot daemon is started with supervisord, see my Ubuntu container for a more detailed description of my implementation of an init-process in ubuntu, see [nimmis/ubuntu](https://hub.docker.com/r/nimmis/ubuntu/)
-
-What's new is
-
-- Possibility to change spigot versions i running containers
-- Detects version if mc-directory already has a precompiled version active
-- Adjust java version depending of MC version, downloads additional java version if needed
-- Support for Minecraft version 1.18
+Differences to nimmis' image:
+- Smaller image size by basing off Debian slim (~70 vs 350MB)
+- Graceful termination is handled by bash rather than supervisord
+- Multi-arch support: x86_64, armv7, arm64
 
 ## Why not a precompiled version of spigot is included
 
@@ -33,7 +26,7 @@ Due to legal reasons you can build it yourself but you can't redistribute the fi
 
 To run the latest stable version of this docker image run
 
-	docker run -d -p 25565:25565 -e EULA=true nimmis/spigot
+	docker run -d -p 25565:25565 -e EULA=true scratchcat1/spigot
 
 the parameter
 
@@ -167,20 +160,6 @@ Sets the maximum memory to use <size>m for MB or <size>g for GB, defaulting to 1
 Sets the initial memory reservation used, use <size>m for MB or <size>g for GB, if this parameter is not set, it is set to MC_MAXMEM. To set the initial size to 512 MB
 
     -e MC_MINMEM=512m
-
-
-#### SPIGOT_AUTORESTART
-
-This variable controls the behavior of the container when the **stop** command is issued inside minecraft
-
-	-e SPIGOT_AUTORESTART=yes
-   
-Which is the default behavior and does not need to be specified, the minecraft server will autostart if the **stop** command is issued.
-
-	-e SPIGOT_AUTORESTART=no
-	
-If the **stop** command is issued the minecraft server will stay down until the container is restarted or the command **mc_start** is issued
-
 #### OTHER_JAVA_OPS
 
 Allows adding other Java options when starting minecraft
@@ -191,77 +170,15 @@ Allows adding other Java options when starting minecraft
 
 ## look at the last output from the spigot server
 
-To get an output of the latest events from the spigot server type
-
-	docker exec spigot mc_log
-
-and you will see the last 10 lines from the output, this is what you will see after startup
-
-	Abort with CTRL-C
-	[13:02:15 INFO]: Zombie Aggressive Towards Villager: true
-	[13:02:15 INFO]: Experience Merge Radius: 3.0
-	[13:02:15 INFO]: Preparing start region for level 0 (Seed: 506255305130990210)
-	[13:02:16 INFO]: Preparing spawn area: 22%
-	[13:02:17 INFO]: Preparing spawn area: 99%
-	[13:02:17 INFO]: Preparing start region for level 1 (Seed: 506255305130990210)
-	[13:02:18 INFO]: Preparing spawn area: 95%
-	[13:02:18 INFO]: Preparing start region for level 2 (Seed: 506255305130990210)
-	[13:02:18 INFO]: Server permissions file permissions.yml is empty, ignoring it
-	[13:02:18 INFO]: Done (3.650s)! For help, type "help" or "?"
-
-It will continue to output everything from the console until you press CTRL-C 
 
 ## sending commands to the server console
 
-You don't need to have an interactive container to be able to send commands to the console. To send
-a command to set the time to day you type
-
-	docker exec spigot mc_send "time set day"
-
-If this was the first command issued after a start the output should look like
-
-	[13:02:15 INFO]: Zombie Aggressive Towards Villager: true
-	[13:02:15 INFO]: Experience Merge Radius: 3.0
-	[13:02:15 INFO]: Preparing start region for level 0 (Seed: 506255305130990210)
-	[13:02:16 INFO]: Preparing spawn area: 22%
-	[13:02:17 INFO]: Preparing spawn area: 99%
-	[13:02:17 INFO]: Preparing start region for level 1 (Seed: 506255305130990210)
-	[13:02:18 INFO]: Preparing spawn area: 95%
-	[13:02:18 INFO]: Preparing start region for level 2 (Seed: 506255305130990210)
-	[13:02:18 INFO]: Server permissions file permissions.yml is empty, ignoring it
-	[13:02:18 INFO]: Done (3.650s)! For help, type "help" or "?"
-	[13:12:35 INFO]: Set the time to 1000
-
-It will continue to output everything from the console until you press CTRL-C
-
 ### using the minecraft op command 
 
-To make yourself operator in the game use **mc_send** command, for example give the user **myuser** op use the command.
-
-	docker exec spigot mc_send op myuser
 
 ### using the minecraft stop command
 
-By default the minecraft server will automatically restart on a **stop** inside the minecraft application. You can override this behavior by using
-
-	-e SPIGOT_AUTORESTART=no
-
-This will prevent the server automatically restarting and minecraft has to be started again with the **mc_start** command
-
-
 ## starting and stopping the server
-
-To stop the server but not the container do
-
-	docker exec spigot mc_stop
-
-To start it after being stopped do
-
-	docker exec spigot mc_start
-
-Finally to restart it do
-
-	docker exec spigot mc_restart
 
 ## stopping the container
 
@@ -347,7 +264,7 @@ and the versionlist is updated.
 
 ## Issues
 
-If you have any problems with or questions about this image, please contact us by submitting a ticket through a [GitHub issue](https://github.com/nimmis/docker-spigot/issues "GitHub issue")
+If you have any problems with or questions about this image, please contact us by submitting a ticket through a [GitHub issue](https://github.com/Scratchcat1/docker-spigot/issues "GitHub issue")
 
 1. Look to see if someone already filled the bug, if not add a new one.
 2. Add a good title and description with the following information.

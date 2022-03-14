@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 
-MAINTAINER nimmis <kjell.havneskold@gmail.com>
+LABEL maintainer="Connor Holloway <root_pfad@protonmail.com>"
 
 # SPIGOT_HOME         default directory for SPIGOT-server
 # SPIGOT_VER          default minecraft version to compile
@@ -39,7 +39,7 @@ RUN apt-get update && \
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen && \
 
     # install application
-    apt-get install -y --no-install-recommends  wget git jq curl tmux apt-transport-https locales && \
+    apt-get install -y --no-install-recommends wget git jq procps curl tmux apt-transport-https ca-certificates && \
 
     # remove apt cache from image
     apt-get clean all && \
@@ -47,7 +47,7 @@ RUN apt-get update && \
 
 RUN mkdir /etc/BUILDS && \
     # Make info file about this build
-    printf "Build of nimmis/spigot:latest, date: %s\n"  `date -u +"%Y-%m-%dT%H:%M:%SZ"` > /etc/BUILDS/spigot && \
+    printf "Build of scratchcat1/spigot:latest, date: %s\n"  `date -u +"%Y-%m-%dT%H:%M:%SZ"` > /etc/BUILDS/spigot && \
 
     # Make special user for minecraft to run in
     /usr/sbin/useradd -s /bin/bash -d /minecraft -m minecraft && \

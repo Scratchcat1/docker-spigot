@@ -29,7 +29,7 @@ CPU_ARCH=$(get_cpu_arch_for_java)
 function set_java_17 () {
   if ! [ -d /usr/lib/jvm/jdk-17* ]; then
     echo "Downloading JDK 1.17"
-    curl -L "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jdk_${CPU_ARCH}_linux_hotspot_17.0.1_12.tar.gz"  | tar xz -C /usr/lib/jvm
+    curl -L "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.2%2B8/OpenJDK17U-jdk_${CPU_ARCH}_linux_hotspot_17.0.2_8.tar.gz"  | tar xz -C /usr/lib/jvm
   fi
 
   echo "set java version to 17"
@@ -54,7 +54,7 @@ function set_java_16 () {
 function set_java_11 () {
   if ! [ -d /usr/lib/jvm/jdk-11* ]; then
     echo "Downloading JDK 1.11"
-    curl -L "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.13%2B8/OpenJDK11U-jdk_${CPU_ARCH}_linux_hotspot_11.0.13_8.tar.gz"  | tar xz -C /usr/lib/jvm
+    curl -L "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.14.1%2B1/OpenJDK11U-jdk_${CPU_ARCH}_linux_hotspot_11.0.14.1_1.tar.gz"  | tar xz -C /usr/lib/jvm
   fi
 
   echo "set java version to 11"
@@ -66,7 +66,7 @@ function set_java_11 () {
 function set_java_8 () {
   if ! [ -d /usr/lib/jvm/jdk8* ]; then
     echo "Downloading JDK 1.8"
-    curl -L "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u312-b07/OpenJDK8U-jdk_${CPU_ARCH}_linux_hotspot_8u312b07.tar.gz"  | tar xz -C /usr/lib/jvm
+    curl -L "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u322-b06/OpenJDK8U-jdk_${CPU_ARCH}_linux_hotspot_8u322b06.tar.gz"  | tar xz -C /usr/lib/jvm
   fi
 
   echo "set java version to 8"

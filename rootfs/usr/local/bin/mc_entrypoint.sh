@@ -3,7 +3,7 @@ source /usr/local/bin/mc_util
 
 function graceful_shutdown() {
     echo "SIGTERM received, stopping the server";
-    sendCMD "stop" & sleep 9;
+    stop;
     exit 0;
 }
 
