@@ -57,7 +57,7 @@ function set_java_11 () {
     curl -L "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.13%2B8/OpenJDK11U-jdk_${CPU_ARCH}_linux_hotspot_11.0.13_8.tar.gz"  | tar xz -C /usr/lib/jvm
   fi
 
-  echo "set java version to 16"
+  echo "set java version to 11"
   rm -f /usr/lib/jvm/default-jvm 
   ln -s /usr/lib/jvm/jdk-11* /usr/lib/jvm/default-jvm
 
