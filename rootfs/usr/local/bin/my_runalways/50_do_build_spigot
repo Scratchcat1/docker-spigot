@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# script to check and if not found, build the correct version
+# 
+#
+# (c) 2021 nimmis <kjell.havneskold@gmail.com>
+#
+
+
+if [ -f /etc/mc_current ]; then
+ . /etc/mc_current
+fi
+
+source /usr/local/bin/mc_util
+
+if [ -z "$SPIGOT_VER" ] ; then
+    SPIGOT_VER="latest"
+fi
+
+# check if version exists
+/usr/local/bin/check_mc_versions $SPIGOT_VER
+
+if [ $? -eq 1 ]; then
+    echo "version $SPIGOT_VER is not a releaseverion"
+    exit 1
+fi
+
+echo "Setting version to $SPIGOT_VER"
+
+buildjar $SPIGOT_VER

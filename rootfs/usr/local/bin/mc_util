@@ -1,23 +1,7 @@
-#!/bin/sh
-### BEGIN INIT INFO
-# Provides:       minecraft_server
-# Required-Start: $remote_fs $syslog
-# Required-Stop:  $remote_fs $syslog
-# Default-Start:  2 3 4 5
-# Default-Stop:   0 1 6
-# chkconfig:      345 50 50
-# Description:    Minecraft Server Control Script
-### END INIT INFO
+#!/bin/bash
 #
-# startscript for spigot minecraft server
+# get the PID for minecraft server pocess
 #
-# (c) 2015-2021nimmis <kjell.havneskold@gmail.com>
-#
-
-# fetch global variables when starting from supervisord
-
-. /etc/container_environment.sh
-
 
 MC_USER=minecraft       # User name running the minecraft server
 MC_PROC=spigot.jar   # name of minecraft jar file
@@ -34,46 +18,6 @@ fi
 # Add $OTHER_JAVA_OPS to let the user determine what options they need
 MC_JAVA_OPS="-Xmx$MC_MAXMEM -Xms$MC_MINMEM $OTHER_JAVA_OPS"   # java options for minecraft server
 
-JAVACMD=$(which java)
-
-USAGE=$(cat <<EOF
-Usage:  $0 <option>
-
-Options:
-
-  start
-    Start the Minecraft server.
-
-  stop
-    Stop the Minecraft server.
-
-  restart
-    Restart the Minecraft server.
-
-  create <version> 
-    Create a minecraft server, version is the version of minecraft you want to use.
-    latest gives the latest version. Does not clean other files in the directory
-
-  status
-    Give the status of the server
-
-  accept-eula
-    Accepts Mojangs EULA and set eula.txt correct
-
-  send "<command>"
-    Sends a command to the Minecraft server
-
-  log
-    show output log from the Minecraft server
-
-  backup
-    Makes a backup of the world
-EOF
-)
-
-#
-# get the PID for minecraft server pocess
-#
 
 getPID() {
   local PID
@@ -126,7 +70,8 @@ setProp() {
 #
 # send a command to the running minecraft server
 sendCMD() {
-  echo $1 >> $MC_DIR/input.con
+  tmux send-keys -t mcserver -l stop
+  tmux send-keys -t mcserver Enter
 }
 
 #
@@ -187,7 +132,6 @@ checkOK() {
 
   if [ $(acceptEULA) -eq 1 ] ; then
 	echo "you must accept Mojangs EULA, either set eula=true in $MC_DIR/eula.txt"
-	echo "or run $0 accept-eula"
 	exit 1
   fi
 	
@@ -201,6 +145,7 @@ checkOK() {
 buildjar() {
   # set right version of java for this minecraft version
   /usr/local/bin/set_mc_ver $1
+  hash -r
   # build it if it not exists
   if [ ! -f $SPIGOT_HOME/spigot-$1.jar ]; then
     echo "Building spigot version ($1) jar file, be patient"
@@ -212,8 +157,9 @@ buildjar() {
     HOME=/build-mc
     export HOME
     cd $HOME
-    git config --global --unset core.autocrlf
-    java -Xmx1024M -jar BuildTools.jar --rev $1
+    echo $("java -version")
+    ls -lhaR ./
+    "$JAVACMD -Xmx1024M -jar BuildTools.jar --rev $1"
     #cp /build-mc/Spigot/Spigot-Server/target/spigot-*.jar $SPIGOT_HOME/spigot-$1.jar
     cp /build-mc/spigot-*.jar $SPIGOT_HOME/spigot-$1.jar
     cd $SPIGOT_HOME/
@@ -221,40 +167,6 @@ buildjar() {
   fi
   execCMD "rm -f $SPIGOT_HOME/spigot.jar"
   execCMD "ln -s $SPIGOT_HOME/spigot-$1.jar $SPIGOT_HOME/spigot.jar"
-}
-	
-#
-# prepare console files
-#
-
-ResetConsoleFiles() {
-
-	rm -f $MC_DIR/input.con
-	rm -f $MC_DIR/output.con
-	
-	if [ -f $MC_DIR/input.con ]; then
-		echo "$MC_DIR/input.con could not be removed"
-		exit 1
-	fi
-
-       	if [ -f $MC_DIR/output.con ]; then
-                echo "$MC_DIR/output.con could not be removed"
-                exit 1
-        fi
-
-	execCMD "touch $MC_DIR/input.con"
-	execCMD "touch $MC_DIR/output.con"
-
-	if [ ! -f $MC_DIR/input.con ]; then
-		echo "$MC_DIR/input.con could not be created by $MC_USER"
-		exit 1
-	fi
-
-        if [ ! -f $MC_DIR/output.con ]; then
-                echo "$MC_DIR/output.con could not be created by $MC_USER"
-                exit 1
-        fi
-
 }
 
 
@@ -265,34 +177,12 @@ ResetConsoleFiles() {
 start() {
    echo -n "Starting minecraft server as user $MC_USER..."
 
-   checkOK 
-
-   ResetConsoleFiles
-
+   checkOK
 
    # be in right working directory when starting 
    cd $MC_DIR
-
-   execCMD "tail -f --pid=\$$ $MC_DIR/input.con | { $JAVACMD $MC_JAVA_OPS -jar $MC_DIR/$MC_PROC nogui > $MC_DIR/output.con 2>&1 ; kill \$$ ; } " &
-
-   # check if the command wait OK
-
-   if [ $? -ne 0 ]; then
-     echo "Could not start $MC_DIR/$MC_PROC.\n"
-     exit 1
-   fi
-
-   # wait 2 seconds to see if the process survived
-
-   sleep 2
-
-   if [ $(isRunning) -eq 1 ] ; then
-     echo "Started"
-   else
-     echo "stopped again"
-     exit 1
-   fi
-
+   JAVACMD=$(which java)
+   execCMD "$JAVACMD $MC_JAVA_OPS -jar $MC_DIR/$MC_PROC nogui"
 }
 
 stop() {
@@ -338,92 +228,3 @@ seteula() {
     echo "EULA accepted"
 
 }
-
-case "$1" in
-
-  start)
-    if [ $(isRunning) -eq 1 ] ; then
-
-	echo -n "$MC_PROC is already running with PID "
-        getPID
-	exit 1
-
-    fi
-    start
-  ;;
-
-  stop)
-    if [ $(isRunning) -eq 1 ] ; then
-       stop
-    else
-      echo "$MC_PROC is not running" 
-    fi
-  ;;
-
-  restart)
-
-     stop
-     start
-  ;;
-
-  create)
-    SVER=$2
-    if [ -z "$SVER" ] ; then
-      SVER="latest"
-    fi
-
-    # check if version exists
-    /usr/local/bin/check_mc_versions $SVER
-
-    if [ $? -eq 1 ]; then
-       echo "version $SVER is not a releaseverion"
-       exit 1
-    fi
-
-    echo "Setting version to $SVER"
-
-    buildjar $SVER
-  ;;
-
-  status)
-    if [ $(isRunning) -eq 1 ] ; then
-        echo -n "$MC_PROC is running with PID "
-        getPID
-    else
-	echo "$MC_PROC is not running"
-	exit 1
-    fi
-
-  ;;
-
-  accept-eula)
-
-    seteula
-
-  ;;
-  send)
-     sendCMD "$2"
-  ;;
-
-  log)
-     # tail will not work after log file delete, use -F to keep it working
-     echo "Abort with CTRL-C"
-     tail -F $MC_DIR/output.con
-  ;;
-
-  console)
-
-  ;;
-
-  backup)
-
-  ;;
-
-  *)
-    printf "$USAGE\n"
-    exit 1
-  ;;
-
-esac
-
-exit 0

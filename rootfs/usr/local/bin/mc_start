@@ -1,11 +1,4 @@
-#!/bin/sh
-###########################################################
-#
-# script to start spigot process
-#
-# (c) 2016 nimmis <kjell.havneskold@gmail.com>
-#
-###########################################################
-
-supervisorctl start spigot
-
+#!/bin/bash
+source /usr/local/bin/mc_util
+start
+echo "Server stopped completely"
