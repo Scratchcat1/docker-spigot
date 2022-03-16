@@ -39,7 +39,7 @@ RUN apt-get update && \
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen && \
 
     # install application
-    apt-get install -y --no-install-recommends wget git jq procps curl tmux apt-transport-https ca-certificates && \
+    apt-get install -y --no-install-recommends wget git jq procps curl tmux apt-transport-https ca-certificates libatomic1 && \
 
     # remove apt cache from image
     apt-get clean all && \
